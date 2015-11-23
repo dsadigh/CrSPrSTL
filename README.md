@@ -8,10 +8,11 @@ This MATLAB package contains the implementations of the algorithm described in t
 ##2. Installation:
 This code was written for MATLAB R2014b. Earlier versions may be sufficient, but not tested.
 
-In addition to MATLAB R2014b, and the Control System Toolbox, the code requires:
-###-Yalmip: http://users.isy.liu.se/johanl/yalmip/
+In addition to MATLAB R2014b, and the Control System Toolbox, the toolbox requires the following:
+###-[Yalmip](http://users.isy.liu.se/johanl/yalmip/pmwiki.php?n=Main.Download)
+YALMIP is a modeling language for advanced modeling and solution of convex and nonconvex optimization problems. It is implemented by Johan Löfberg, and can be downloaded for free.
 
-In addition, Change the following Yalmip function. This needs to be done because depends() does not return the right indices of variables for implies in yalmip.
+You also need to modify the following Yalmip function. This needs to be done because depends() does not return the right indices of variables for implies in Yalmip.
 
 go to Yalmip/extras/getvariables.m and modify the file:
 
@@ -25,7 +26,8 @@ go to Yalmip/extras/getvariables.m and modify the file:
 >end
 
 
-###-Gurobi: http://www.gurobi.com/
+###-[Gurobi Optimizer](http://www.gurobi.com/)
+An optimization solver for LP, QP, QCP, MIP, provided for free for academic use.
 
 ##3. Usage:
 Make sure Yalmip is in your MATLAB path.
