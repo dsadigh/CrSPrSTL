@@ -30,6 +30,6 @@ go to Yalmip/extras/getvariables.m and modify the file:
 An optimization solver for LP, QP, QCP, MIP, provided for free for academic use.
 
 ##3. Usage:
-Make sure Yalmip is in your MATLAB path.
+Make sure Yalmip and the src folder are in your MATLAB path. Then you can run any of the tests in Examples folder.
 
 
