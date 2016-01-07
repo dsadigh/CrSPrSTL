@@ -54,6 +54,10 @@ classdef System < handle
             end
         end
         
+        function set_dyn_objective(self, objective)
+            self.objective = objective;
+        end
+        
         function set_dynamics(self, dyn)
             self.dynamics = dyn;
             if isa(dyn, 'Dynamics')
@@ -183,7 +187,7 @@ classdef System < handle
         
         function initialize(self, t)
             self.history = struct('t', [], 'x', [], 'u', [], 'y', []);
-            self.objective.minimize(t, self.dt, AndPredicate(self.constraints{:}));
+            Sum().minimize(t, self.dt, AndPredicate(self.constraints{:}));
             self.history.x(:, end+1) = value(self.x(t));
             self.history.t(:, end+1) = t;
         end
@@ -206,7 +210,7 @@ classdef System < handle
                 keep_past = AndPredicate(keep_past, P(@(t, dt) self.u(past)==u_past), P(@(t, dt) self.y(past)==y_past));
             end
             if isa(self.dynamics, 'Predicate')
-                dynamics = self.dynamics; %#ok<PROP>
+                dynamics = self.dynamics; 
             else
                 dynamics = self.dynamics.local_dynamics(self.dt, x0, u0, t, self.x, self.u, self.y); %#ok<PROP>
             end
@@ -215,7 +219,12 @@ classdef System < handle
                 dynamic_constraints{i} = self.dyn_constraints{i}(x0, t, self.dt); %#ok<AGROW>
             end
             dyn_constraint = always(AndPredicate(dynamic_constraints{:}), t-T1, t-T1);
-            diag = self.objective.minimize(T1:self.dt:T2, self.dt, AndPredicate(self.constraints{:}, always(dynamics, t-T1, inf), keep_past, dyn_constraint)); %#ok<PROP>
+            if isa(self.objective, 'Objective')
+                objective = self.objective;
+            else
+                objective = self.objective(x0, t, self.dt);
+            end
+            diag = objective.minimize(T1:self.dt:T2, self.dt, AndPredicate(self.constraints{:}, always(dynamics, t-T1, inf), keep_past, dyn_constraint)); %#ok<PROP>
             if diag.problem
                 error('Model is infeasible at time %0.2f', t);
             end
@@ -238,6 +247,9 @@ classdef System < handle
         function run_closed_loop(self, L, t1, t2)
             env = Environment(self);
             env.run_closed_loop(L, t1, t2);
+        end
+        
+        function plotter_hook(self, plotter)
         end
 %         
 %         function run_closed_loop(self, L, t1, t2)

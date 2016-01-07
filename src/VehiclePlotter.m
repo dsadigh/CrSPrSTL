@@ -5,6 +5,7 @@ classdef VehiclePlotter < handle
         vehicles
         roads
         intersections
+        obstacles
         grass
         t_last
         dt
@@ -28,6 +29,10 @@ classdef VehiclePlotter < handle
             self.intersections{end+1} = struct('p', intersection.points, 'f', intersection.f, 'lights', []);
         end
         
+        function add_obstacle(self, obstacle)
+            self.obstacles{end+1} = struct('p', obstacle.points);
+        end
+        
         function create_figure(self)
             past_style = {'LineWidth', 2};
             future_style = {'--g'};
@@ -47,6 +52,11 @@ classdef VehiclePlotter < handle
                 set(self.vehicles{i}.vehicle_plot, 'FaceAlpha', 'texturemap', 'AlphaData', alpha);
                 self.vehicles{i}.past_plot = plot(0, 0, past_style{:});
                 self.vehicles{i}.future_plot = plot(0, 0, future_style{:});
+            end
+            for i = 1:numel(self.obstacles)
+                points = self.obstacles{i}.p;
+                road = patch('FaceColor', [1 0.5 0], 'EdgeColor', 'none');
+                set(road, 'Xdata', points(1, :), 'Ydata', points(2, :), 'Zdata', ones(1, 4)*-0.001);
             end
             for i = 1:numel(self.intersections)
                 points = self.intersections{i}.p;
@@ -81,10 +91,8 @@ classdef VehiclePlotter < handle
                 road = patch('FaceColor', [0.5 0.5 0.5], 'EdgeColor', 'none');
                 set(road, 'Xdata', points(1, :), 'Ydata', points(2, :), 'Zdata', ones(1, 4)*-0.002);
             end
-            for i = 1:numel(self.roads)
-            end
             view(2);
-            axis(2*[-1 1 -1 1]); %#ok<CPROP>
+            axis(5*[-1 1 -1 1]); %#ok<CPROP>
             set(self.axis, 'YDir', 'Normal');
         end
         

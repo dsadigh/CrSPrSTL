@@ -6,10 +6,12 @@ classdef Environment < handle
         names
         systems
         movie
+        fig_dir
     end
     
     methods
         function self = Environment(system)
+            self.fig_dir = [];
             if nargin>=1
                 self.names = {''};
                 self.systems = system;
@@ -45,6 +47,7 @@ classdef Environment < handle
                 plotter.add_signal(merge_name('x', self.names{i}), self.systems(i).x);
                 plotter.add_signal(merge_name('u', self.names{i}), self.systems(i).u);
                 plotter.add_signal(merge_name('y', self.names{i}), self.systems(i).y);
+                self.systems(i).plotter_hook(plotter);
             end
         end
         
@@ -71,6 +74,7 @@ classdef Environment < handle
             for i = 1:numel(self.systems)
                 self.systems(i).initialize(t1);
             end
+            cntr = 0;
             for t = t1:dt:t2
                 for i = 1:numel(self.systems)
                     self.systems(i).find_control(L, t);
@@ -82,10 +86,20 @@ classdef Environment < handle
                     pause
                     if ~isempty(plotter.fig)
                         self.movie = getframe(plotter.fig);
+                        if ~isempty(self.fig_dir)
+                            mkdir(self.fig_dir);
+                            savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
+                            cntr = cntr + 1;
+                        end
                     end
                 else
                     if ~isempty(plotter.fig)
                         self.movie(end+1) = getframe(plotter.fig);
+                        if ~isempty(self.fig_dir)
+                            mkdir(self.fig_dir);
+                            savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
+                            cntr = cntr + 1;
+                        end
                     end
                 end
                 for i = 1:numel(self.systems)
