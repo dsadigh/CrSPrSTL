@@ -7,6 +7,7 @@ dt = 0.03;
 sys = Quadrotor(dt, 0.1);
 env = QuadrotorEnvironment(sys);
 env.add_obstacle(Obstacle(@(x, t) x(3)<-0.35));
+env.fig_dir = 'dyn_quadrotor';
 %env.add_obstacle(Obstacle(@(x, t) (x(1)-0.5)^2+(x(2)-0.5)^2+3*(x(3)+0.5)^2<0.5));
 assignin('base', 'sys', sys);
 [x, u, ~] = sys.signals();
@@ -32,11 +33,12 @@ env.run_closed_loop(20, 0., 1.);
 %sys.history.x;
 %sys.run_open_loop(0., 5)
 
+env.save_movie('dyn_quadrotor/dyn_quadrotor.avi', 1);
 % Video
-video = VideoWriter('test.avi', 'Uncompressed AVI');
-video.FrameRate = 1;
-open(video);
-writeVideo(video, env.movie);
-close(video);
+%video = VideoWriter('test.avi', 'Uncompressed AVI');
+%video.FrameRate = 1;
+%open(video);
+%writeVideo(video, env.movie);
+%close(video);
 
 end
