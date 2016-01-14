@@ -5,7 +5,7 @@ function test_vehicle_rrt
     R = 4;
     W = 1;
     
-    map = figure;
+    figure;
     hold on;
     axis([-R-W,R+W,-R-W,R+W]);
     axis equal;
@@ -34,8 +34,8 @@ function test_vehicle_rrt
     
     for i = 1:M
         theta = 2*pi*(i-1)/M;
-        obstacles{end+1} = rot(pi+pi/10+theta)*[-W/2 0 W/2; R-W R R-W];
-        obstacles{end+1} = rot(pi+pi/10+pi/10+theta)*[-W/2 0 W/2; R+W R R+W];
+        obstacles{end+1} = rot(pi+pi/10+theta)*[-W/2 0 W/2; R-W R R-W]; %#ok<AGROW>
+        obstacles{end+1} = rot(pi+pi/10+pi/10+theta)*[-W/2 0 W/2; R+W R R+W]; %#ok<AGROW>
     end
     
     for i = 1:length(obstacles)
@@ -118,7 +118,7 @@ function test_vehicle_rrt
 %     sys.add_constraint(P('u(0)==0'));
 
     start = [rot(pi/30)*[0; -R]; 0; 1];
-    finish = [0; R; pi; 1];
+    finish = [rot(pi/30+2*pi/10)*[0; -R]; 2*pi/10; 1];
     
     start_arrow = quiver(0, 0, 0, 0, 0, 'LineWidth', 5);
     goal_arrow = quiver(0, 0, 0, 0, 0, 'LineWidth', 5);
@@ -177,7 +177,8 @@ function test_vehicle_rrt
         end
     end
     
-    function route(goal, istart)
+    function reached = route(goal, istart)
+        reached = -1;
         if nargin<=1
             istart = closest(goal);
         end
@@ -206,12 +207,13 @@ function test_vehicle_rrt
                     return
                 end
                 newx = sys.history.x(:, end);
-                if norm(newx(1:2)-goal(1:2))<0.1
-                    break
-                end
-                RRT{end+1} = node(newx, sys.history.u(:, end), iprev);
+                RRT{end+1} = node(newx, sys.history.u(:, end), iprev); %#ok<AGROW>
                 plot([sys.history.x(1, end), RRT{iprev}.x(1)], [sys.history.x(2, end), RRT{iprev}.x(2)], 'm');
                 iprev = length(RRT);
+                if norm(newx(1:2)-goal(1:2))<0.1
+                    reached = iprev;
+                    break
+                end
             end
         %catch
         %    return
@@ -238,8 +240,26 @@ function test_vehicle_rrt
 
     %route(finish, 1);
     while true
-        route(random_point());
+        reached = route(finish);
+        if reached~=-1
+            break
+        end
+        for l=1:10
+            route(random_point());
+        end
     end
+    
+    update_arrow(start_arrow, start);
+    update_arrow(goal_arrow, finish);
+    control = [];
+    v = reached;
+    while v~=1
+        control = [control RRT{v}.uprev]; %#ok<AGROW>
+        plot([RRT{v}.x(1) RRT{RRT{v}.iprev}.x(1)], [RRT{v}.x(2) RRT{RRT{v}.iprev}.x(2)], 'g', 'LineWidth', 3);
+        v = RRT{v}.iprev;
+    end
+    
+    display(control);
     %route(finish);
     
     %sys.add_constraint(P(@(t, dt) x(2)==final));
