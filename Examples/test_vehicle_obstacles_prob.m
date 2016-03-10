@@ -19,11 +19,22 @@ end
 
 rot = @(theta) [cos(theta) -sin(theta); sin(theta) cos(theta)];
 
+PROBS = 1:2:20;
+STATS = 2:2:20;
+
 M = 10;
 for i = 1:M
     theta = 2*pi*(i-1)/M;
     env.add_obstacle(VehicleObstacle(rot(pi+pi/10+theta)*[-W/2 0 W/2; R-W R-W/5 R-W]));
     env.add_obstacle(VehicleObstacle(rot(pi+pi/10+pi/10+theta)*[-W/2 0 W/2; R+W R+W/5 R+W]));
+end
+
+for i = 1:numel(env.obstacles)
+    color = [1. 0.5 0.];
+    if find(PROBS==i)
+        color = [1. 0.5 0.7];
+    end
+    env.obstacles(i).color = color;
 end
 
 objective = @(x0, t0, dt) Sum(@(t) x(t, 1)*x0(2)-x(t, 2)*x0(1));
@@ -44,8 +55,12 @@ for i=1:N
 end
 sys.add_constraint(always(p, 3*dt, inf));
 
+[X, Y] = meshgrid(-0.4:0.1:0.4, -0.4:0.1:0.4);
+sensor = Sensor2D([X(:) Y(:)], 0.5);
+sys.set_sensor(sensor, env.obstacle_model(env.obstacles(PROBS)));
+
 % Avoid obstacles
-for i=1:numel(env.obstacles)
+for i=STATS
     points = env.obstacles(i).points;
     cons = [];
     for j=1:size(points, 2)
