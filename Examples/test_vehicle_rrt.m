@@ -1,14 +1,20 @@
 function test_vehicle_rrt
+
+    video = VideoWriter('test_vehicle_rrt.avi', 'Uncompressed AVI');
+    video.FrameRate = 1;
+    global total_time
+    total_time = 0;
     rng(1);
     dt = 0.2;
     SIZE = 0.5;
     R = 4;
     W = 1;
     
-    figure;
+    fig = figure;
     hold on;
-    axis([-R-W,R+W,-R-W,R+W]);
+    patch([-R-W -R-W R+W R+W], [-R-W R+W R+W -R-W], [-0.3, -0.3, -0.3, -0.3], 'FaceColor', [0 0.5 0.03], 'EdgeColor', 'none');
     axis equal;
+    axis([-R-W,R+W,-R-W,R+W]);
     grid on;
     
     theta1 = 0.:0.01:2*pi;
@@ -118,8 +124,10 @@ function test_vehicle_rrt
 %     sys.add_constraint(P('u(0)==0'));
 
     start = [rot(pi/30)*[0; -R]; 0; 1];
-    finish = [rot(pi/30+2*pi/10)*[0; -R]; 2*pi/10; 1];
-    
+    %finish = [rot(pi/30+2*pi/10)*[0; -R]; 2*pi/10; 1];
+    finish = [rot(pi/2)*[0; -R]; pi/2; 1];
+    %finish = [rot(pi/30+pi/10)*[0; -R]; pi/30+pi/10; 1];
+
     start_arrow = quiver(0, 0, 0, 0, 0, 'LineWidth', 5);
     goal_arrow = quiver(0, 0, 0, 0, 0, 'LineWidth', 5);
     
@@ -176,6 +184,8 @@ function test_vehicle_rrt
             end
         end
     end
+
+    movie = getframe(fig);
     
     function reached = route(goal, istart)
         reached = -1;
@@ -187,6 +197,7 @@ function test_vehicle_rrt
         end
         update_arrow(start_arrow, RRT{istart}.x);
         update_arrow(goal_arrow, goal);
+        movie(end+1) = getframe(fig);
         t1 = 0;
         t2 = 1;
         xstart = RRT{istart}.x;
@@ -209,6 +220,7 @@ function test_vehicle_rrt
                 newx = sys.history.x(:, end);
                 RRT{end+1} = node(newx, sys.history.u(:, end), iprev); %#ok<AGROW>
                 plot([sys.history.x(1, end), RRT{iprev}.x(1)], [sys.history.x(2, end), RRT{iprev}.x(2)], 'm');
+                movie(end+1) = getframe(fig);
                 iprev = length(RRT);
                 if norm(newx(1:2)-goal(1:2))<0.1
                     reached = iprev;
@@ -251,6 +263,7 @@ function test_vehicle_rrt
     
     update_arrow(start_arrow, start);
     update_arrow(goal_arrow, finish);
+    movie(end+1) = getframe(fig);
     control = [];
     v = reached;
     while v~=1
@@ -258,6 +271,11 @@ function test_vehicle_rrt
         plot([RRT{v}.x(1) RRT{RRT{v}.iprev}.x(1)], [RRT{v}.x(2) RRT{RRT{v}.iprev}.x(2)], 'g', 'LineWidth', 3);
         v = RRT{v}.iprev;
     end
+    movie(end+1) = getframe(fig);
+    
+    open(video);
+    writeVideo(video, movie);
+    close(video);
     
     display(control);
     %route(finish);
