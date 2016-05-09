@@ -13,6 +13,20 @@ classdef VehicleEnvironment < Environment
             self.intersections = [];
             self.obstacles = [];
         end
+        function result = obstacle_model(self, obstacles)
+            if nargin<=1
+                obstacles = self.obstacles;
+            end
+            function o = f(x, t)
+                o = false;
+                for i = 1:numel(obstacles)
+                    if obstacles(i).f(x, t)
+                        o = true;
+                    end
+                end
+            end
+            result = @f;
+        end
         function add_road(self, road)
             self.roads = [self.roads road];
         end

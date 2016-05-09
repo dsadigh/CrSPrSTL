@@ -18,7 +18,7 @@ classdef VehiclePlotter < handle
         end
         
         function add_vehicle(self, vehicle)
-            self.vehicles{end+1} = struct('size', vehicle.size, 'x', vehicle.x, 'past', [], 'future', [], 'past_plot', [], 'future_plot', [], 'vehicle_plot', []);
+            self.vehicles{end+1} = struct('size', vehicle.size, 'x', vehicle.x, 'past', [], 'future', [], 'past_plot', [], 'future_plot', [], 'vehicle_plot', [], 'sensor_plot', [], 'sensor', vehicle.sensor);
         end
         
         function add_road(self, road)
@@ -30,7 +30,7 @@ classdef VehiclePlotter < handle
         end
         
         function add_obstacle(self, obstacle)
-            self.obstacles{end+1} = struct('p', obstacle.points);
+            self.obstacles{end+1} = struct('p', obstacle.points, 'color', obstacle.color);
         end
         
         function create_figure(self)
@@ -52,10 +52,11 @@ classdef VehiclePlotter < handle
                 set(self.vehicles{i}.vehicle_plot, 'FaceAlpha', 'texturemap', 'AlphaData', alpha);
                 self.vehicles{i}.past_plot = plot(0, 0, past_style{:});
                 self.vehicles{i}.future_plot = plot(0, 0, future_style{:});
+                self.vehicles{i}.sensor_plot = patch('Vertices', [], 'Faces', [], 'FaceColor', 'red', 'EdgeColor', 'none', 'FaceAlpha', 0.1);
             end
             for i = 1:numel(self.obstacles)
                 points = self.obstacles{i}.p;
-                road = patch('FaceColor', [1 0.5 0], 'EdgeColor', 'none');
+                road = patch('FaceColor', self.obstacles{i}.color, 'EdgeColor', 'none');
                 set(road, 'Xdata', points(1, :), 'Ydata', points(2, :), 'Zdata', ones(1, 4)*-0.001);
             end
             for i = 1:numel(self.intersections)
@@ -66,6 +67,7 @@ classdef VehiclePlotter < handle
                     a = (q-p)/norm(q-p);
                     b = [a(2) -a(1)];
                     theta = linspace(0, 2*pi, 20);
+                    patch(q(1)+0.2*(1.5*a(1)+b(1))+[-0.05*b(1), -0.05*b(1)-0.2*a(1), 0.05*b(1)-0.2*a(1), 0.05*b(1)], q(2)+0.2*(1.5*a(2)+b(2))+[-0.05*b(2), -0.05*b(2)-0.2*a(2), 0.05*b(2)-0.2*a(2), 0.05*b(2)], ones(1, 4)*0.0005, 'FaceColor', 'black', 'EdgeColor', 'none');
                     self.intersections{i}.lights = [self.intersections{i}.lights patch(0.09*cos(theta)+q(1)+0.2*(1.5*a(1)+b(1)), 0.09*sin(theta)+q(2)+0.2*(1.5*a(2)+b(2)), ones(1, length(theta))*0.001, 'FaceColor', 'red', 'EdgeColor', 'black')];
                 end
             end
@@ -92,7 +94,7 @@ classdef VehiclePlotter < handle
                 set(road, 'Xdata', points(1, :), 'Ydata', points(2, :), 'Zdata', ones(1, 4)*-0.002);
             end
             view(2);
-            axis(5*[-1 1 -1 1]); %#ok<CPROP>
+            axis(2*[-1 1 -1 1]); %#ok<CPROP>
             set(self.axis, 'YDir', 'Normal');
         end
         
@@ -131,6 +133,17 @@ classdef VehiclePlotter < handle
                     if i==1
                         set(self.vehicles{i}.future_plot, 'Xdata', self.vehicles{i}.future(1, :), 'Ydata', self.vehicles{i}.future(2, :));
                     end
+                end
+                if ~isempty(self.vehicles{i}.sensor)
+                    X = xlim(self.axis);
+                    Y = ylim(self.axis);
+                    [X, Y] = meshgrid(linspace(X(1), X(2), 40), linspace(Y(1), Y(2), 40));
+                    V = X;
+                    for j = 1:numel(X)
+                        V(j) = self.vehicles{i}.sensor.classify([X(j); Y(j)]);
+                    end
+                    %[faces, verts] = isosurface(X, Y, Z, V);
+                    %set(self.quadrotors{i}.sensor_plot, 'Faces', faces, 'Vertices', verts);
                 end
             end
         end

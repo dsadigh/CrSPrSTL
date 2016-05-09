@@ -3,12 +3,14 @@ classdef SubSignal < handle
     properties
         signal
         ind
+        type
     end
     
     methods
         function self = SubSignal(signal, ind)
             self.signal = signal;
             self.ind = ind;
+            self.type = signal.type;
         end
         function result = subsref(self, S)
             if ~isequal(S.type, '()')

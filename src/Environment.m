@@ -7,10 +7,12 @@ classdef Environment < handle
         systems
         movie
         fig_dir
+        headless
     end
     
     methods
         function self = Environment(system)
+            self.headless = false;
             self.fig_dir = [];
             if nargin>=1
                 self.names = {''};
@@ -57,7 +59,9 @@ classdef Environment < handle
                 self.systems(i).run_open_loop(t1, t2);
             end
             plotter = self.get_plotter();
-            plotter.capture_future(t1:dt:t2);
+            if plotter
+                plotter.capture_future(t1:dt:t2);
+            end
         end
         
         function save_movie(self, filename, rate)
@@ -70,7 +74,9 @@ classdef Environment < handle
         
         function run_closed_loop(self, L, t1, t2)
             dt = self.get_dt();
-            plotter = self.get_plotter();
+            if ~self.headless
+                plotter = self.get_plotter();
+            end
             for i = 1:numel(self.systems)
                 self.systems(i).initialize(t1);
             end
@@ -79,26 +85,32 @@ classdef Environment < handle
                 for i = 1:numel(self.systems)
                     self.systems(i).find_control(L, t);
                 end
-                plotter.capture_past(t);
-                plotter.capture_future(t:dt:t+L*dt);
+                if ~self.headless
+                    plotter.capture_past(t);
+                    plotter.capture_future(t:dt:t+L*dt);
+                end
                 drawnow;
                 if t==t1
                     pause
-                    if ~isempty(plotter.fig)
-                        self.movie = getframe(plotter.fig);
-                        if ~isempty(self.fig_dir)
-                            mkdir(self.fig_dir);
-                            savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
-                            cntr = cntr + 1;
+                    if ~self.headless
+                        if ~isempty(plotter.fig)
+                            self.movie = getframe(plotter.fig);
+                            if ~isempty(self.fig_dir)
+                                mkdir(self.fig_dir);
+                                savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
+                                cntr = cntr + 1;
+                            end
                         end
                     end
                 else
-                    if ~isempty(plotter.fig)
-                        self.movie(end+1) = getframe(plotter.fig);
-                        if ~isempty(self.fig_dir)
-                            mkdir(self.fig_dir);
-                            savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
-                            cntr = cntr + 1;
+                    if ~self.headless
+                        if ~isempty(plotter.fig)
+                            self.movie(end+1) = getframe(plotter.fig);
+                            if ~isempty(self.fig_dir)
+                                mkdir(self.fig_dir);
+                                savefig(plotter.fig, fullfile(self.fig_dir, num2str(cntr)));
+                                cntr = cntr + 1;
+                            end
                         end
                     end
                 end

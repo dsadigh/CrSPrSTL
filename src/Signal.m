@@ -7,18 +7,26 @@ classdef Signal < handle
         generator
         dt
         map
+        type
     end
     
     methods
         function self = Signal(dt, varargin)
-            if numel(varargin)==1
-                if (isnumeric(varargin{1}))
-                    self.generator = @() sdpvar(varargin{1}, 1);
-                else
-                    self.generator = varargin{1};
-                end
+            if numel(varargin)==0
+                self.generator = @() sdpvar();
+                self.type = 'deterministic';
             else
-                self.generator = @() sdpvar(varargin{:});
+                if isnumeric(varargin{1})
+                    if numel(varargin)==1
+                        self.generator = @() sdpvar(varargin{1}, 1);
+                    else
+                        self.generator = @() sdpvar(varargin{:});
+                    end
+                    self.type = 'deterministic';
+                else
+                    self.generator = @() tracked_var(varargin{:});
+                    self.type = 'stochastic';
+                end
             end
             self.dt = dt;
             self.map = containers.Map('KeyType', 'int64', 'ValueType', 'any');

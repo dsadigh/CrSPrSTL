@@ -6,6 +6,7 @@ function LinAlg = LinearAlgebra()
     LinAlg.SkewSymmetric_3Dim    = @SkewSymmetric_3Dim;
     LinAlg.zyx_Euler_RotationMat = @zyx_Euler_RotationMat;
     LinAlg.zyx_Ang_RateMat       = @zyx_Ang_RateMat;
+    LinAlg.yx_RotationMat = @yx_RotationMat;
 
     function SSMat = SkewSymmetric_3Dim(Vector)
         

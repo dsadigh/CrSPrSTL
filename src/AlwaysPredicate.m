@@ -25,37 +25,25 @@ classdef AlwaysPredicate < Predicate
             end
         end
         
-        function C = enforce(self, dt, l0, l1, t0, t1)
-            C = self.p.enforce(dt, l0, l1, t0+self.t1, t1+self.t2);
+        function C = enforce(self, dt, l0, l1, t0, t1, varargin)
+            C = self.p.enforce(dt, l0, l1, t0+self.t1, t1+self.t2, varargin{:});
         end
         
-        function C = Tconstraints(self, T, dt, t0)
+        function C = Tconstraints(self, T, dt, t0, varargin)
             a = round(self.t1/dt);
             b = round(self.t2/dt);
             Tp = binvar(1, numel(T));
-            C = self.p.Tconstraints(Tp, dt, t0);
+            C = self.p.Tconstraints(Tp, dt, t0, varargin{:});
             for t = a:min(b, numel(T)-1)
                 C = [C, T(1:end)<=[Tp(1+t:end), ones(1, t)]]; %#ok<AGROW>
             end
         end
         
-        function C = Trobust(self, T, dt, t0)
-            a = round(self.t1/dt);
-            b = round(self.t2/dt);
-            Tp = sdpvar(1, numel(T));
-            Tps = {};
-            C = self.p.Trobust(Tp, dt, t0);
-            for t = a:min(b, numel(T)-1)
-                Tps = [Tps {Tp(1+t:end)}]; %#ok<AGROW>
-            end
-            C = [C, min_ge(Tps, T)];
-        end
-        
-        function C = Fconstraints(self, F, dt, t0)
+        function C = Fconstraints(self, F, dt, t0, varargin)
             a = round(self.t1/dt);
             b = round(self.t2/dt);
             Fp = binvar(1, numel(F));
-            C = self.p.Fconstraints(Fp, dt, t0);
+            C = self.p.Fconstraints(Fp, dt, t0, varargin{:});
             Fsum = 0;
             for t = a:min(b, numel(F))
                 % Being optimistic about future
@@ -63,22 +51,6 @@ classdef AlwaysPredicate < Predicate
             end
             C = [C, F<=Fsum];
         end
-        % TODO: For impleenting adversarial agents
-        function C = Frobust(self, F, dt, t0)
-            a = round(self.t1/dt);
-            b = round(self.t2/dt);
-            Fp = sdpvar(1, numel(F));
-            C = self.p.Frobust(Fp, dt, t0);
-            Fps = {};
-            for t = a:min(b, numel(F))
-                Fps = [Fps {Fp(1+t:end)}];
-            end
-            C = [C, max_ge(Fps, F)];
-        end
-        
-        %function C = forced_constraints(self, dt, L_start, L_end, t_start, t_end)
-        %    C = self.p.forced_constraints(dt, L_start, L_end, t_start+self.t1, t_end+self.t2);
-        %end
     end
     
 end

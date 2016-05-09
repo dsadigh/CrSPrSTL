@@ -7,21 +7,19 @@ classdef (Abstract) Predicate
     
 
     methods (Abstract)
-        C = Tconstraints(self, T, dt, t0)
-        C = Fconstraints(self, F, dt, t0)
-        C = Trobust(self, T, dt, t0)
-        C = Frobust(self, T, dt, t0)
+        C = Tconstraints(self, T, dt, t0, varargin)
+        C = Fconstraints(self, F, dt, t0, varargin)
     end
     
     methods
-        function C = enforce(self, dt, l0, l1, t0, t1)
+        function C = enforce(self, dt, l0, l1, t0, t1, varargin)
             l1 = l0+round((l1-l0)/dt)*dt;
             t0 = max(t0, l0);
             t1 = min(t1, l1);
             a = round((t0-l0)/dt)+1;
             b = round((t1-l0)/dt)+1;
             T = binvar(1, round((l1-l0)/dt)+1);
-            C = self.Tconstraints(T, dt, l0);
+            C = self.Tconstraints(T, dt, l0, varargin{:});
             C = [C T(a:b)>=1];
         end
         function result = and(varargin)

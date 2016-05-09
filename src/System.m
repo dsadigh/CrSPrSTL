@@ -251,61 +251,6 @@ classdef System < handle
         
         function plotter_hook(self, plotter)
         end
-%         
-%         function run_closed_loop(self, L, t1, t2)
-%             plotter = self.create_plotter();
-%             self.history = struct('t', [], 'x', [], 'u', [], 'y', []);
-%             self.objective.minimize(t1, self.dt, AndPredicate(self.constraints{:}));
-%             for t=t1:self.dt:t2
-%                 x0 = value(self.x(t));
-%                 u0 = value(self.u(max(t-self.dt, t1)));
-%                 T1 = max(t1, t-self.dt*L);
-%                 T2 = t+self.dt*L;
-%                 ts = T1:self.dt:T2;
-%                 past = T1:self.dt:t-self.dt;
-%                 x_past = value(self.x([past t]));
-%                 u_past = value(self.u(past));
-%                 y_past = value(self.y(past));
-%                 keep_past = P(@(tprime, dt) self.x([past t])==x_past);
-%                 if ~isempty(past)
-%                     keep_past = AndPredicate(keep_past, P(@(t, dt) self.u(past)==u_past), P(@(t, dt) self.y(past)==y_past));
-%                 end
-%                 if isa(self.dynamics, 'Predicate')
-%                     dynamics = self.dynamics; %#ok<PROP>
-%                 else
-%                     dynamics = self.dynamics.local_dynamics(self.dt, x0, u0, t, self.x, self.u, self.y); %#ok<PROP>
-%                 end
-%                 dynamic_constraints = {};
-%                 for i = 1:length(self.dyn_constraints)
-%                     dynamic_constraints{i} = self.dyn_constraints{i}(x0, t, self.dt); %#ok<AGROW>
-%                 end
-%                 dyn_constraint = always(AndPredicate(dynamic_constraints{:}), t-T1, t-T1);
-%                 diag = self.objective.minimize(ts, self.dt, AndPredicate(always(dynamics, t-T1, inf), keep_past, dyn_constraint, self.constraints{:})); %#ok<PROP>
-%                 if diag.problem
-%                     error('Model is infeasible at time %0.2f', t);
-%                 end
-%                 plotter.capture_future(ts);
-%                 plotter.capture_past(t);
-%                 
-%                 self.history.x(:, end+1) = value(self.x(t));
-%                 self.history.y(:, end+1) = value(self.y(t));
-%                 self.history.u(:, end+1) = value(self.u(t));
-%                 self.history.t(:, end+1) = t;
-%                 
-%                 drawnow;
-%                 
-%                 if t==t1
-%                     pause
-%                 end
-%                 
-%                 if t==t1
-%                     self.movie = getframe(plotter.fig);
-%                 else
-%                     self.movie(end+1) = getframe(plotter.fig);
-%                 end
-%                 
-%             end
-%         end
     end
     
 end

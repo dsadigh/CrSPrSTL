@@ -14,7 +14,7 @@ classdef ProbabilisticPredicate < Predicate
             self.f = extract_function(f); % inner predicate: can be a function of time
             self.pr = extract_function(pr); % threshold on probability: can be a function of time
         end
-        function C = enforce(self, dt, l0, l1, t0, t1)
+        function C = enforce(self, dt, l0, l1, t0, t1, varargin)
             l1 = l0+round((l1-l0)/dt)*dt;
             t0 = max(t0, l0);
             t1 = min(t1, l1);
@@ -30,7 +30,7 @@ classdef ProbabilisticPredicate < Predicate
                 end
             end
         end
-        function C = Tconstraints(self, T, dt, t0)
+        function C = Tconstraints(self, T, dt, t0, varargin)
             C = [];
             for i=1:numel(T)
                 t = t0+(i-1)*dt;
@@ -47,12 +47,8 @@ classdef ProbabilisticPredicate < Predicate
                 end
             end
         end
-        
-        function C = Trobust(self, T, dt, t0)
-            error('Not implemented yet');
-        end
-            
-        function C = Fconstraints(self, F, dt, t0)
+
+        function C = Fconstraints(self, F, dt, t0, varargin)
             C = [];
             for i=1:numel(F)
                 t = t0+(i-1)*dt;
@@ -64,10 +60,6 @@ classdef ProbabilisticPredicate < Predicate
                     C = [C implies(F(i), constraint)]; %#ok<AGROW>
                 end
             end
-        end
-        
-        function C = Frobust(self, F, dt, t0)
-            error('Not implemented yet');
         end
     end
 end

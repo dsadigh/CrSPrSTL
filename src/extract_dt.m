@@ -1,4 +1,4 @@
-function result = extract_dt(ts, dt)
+function result = extract_dt(ts, dt, varargin)
     % function: extract_dt
     % input: ts, dt
     % output: dt, it is 1 if not specified.

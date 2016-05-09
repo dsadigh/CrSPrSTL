@@ -49,7 +49,9 @@ classdef Freeway < System
             dyn = ConstraintDynamics(x, r, p);
             self.set_dynamics(dyn);
             
-            self.add_constraint(P(@(t, dt) x(0)==0));
+            %self.add_constraint(P(@(t, dt) x(0)==0));
+            self.add_constraint(P(@(t, dt) n(0) == 0.5));
+            self.add_constraint(P(@(t , dt) l(0) == -0.5));
             %self.add_constraint(always(P(@(t, dt) l(t)>=0)));
             self.add_constraint(always(P(@(t, dt) r(t)>=0)));
             self.add_constraint(always(P(@(t, dt) r(t)<=rbar)));

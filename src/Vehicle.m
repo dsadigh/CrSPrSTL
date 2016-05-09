@@ -4,9 +4,18 @@ classdef Vehicle < System
     % methods: plotter, Vehicle
     properties
         size
+        sensor
     end
     
     methods
+        function set_sensor(self, sensor, obstacle_model)
+            self.sensor = sensor;
+            function C = dyn_constraint(x, t)
+                self.sensor.sense(obstacle_model, x, t);
+                C = always(Pr(@(t, dt) self.sensor.wall'*[self.x(t, 1:2); 1]<=0)>=self.sensor.threshold, 2*self.dt, inf);
+            end
+            self.add_dyn_constraint(@dyn_constraint);
+        end
         function self = Vehicle(dt, size)
             self@System(dt);
             self.size = size;
@@ -21,6 +30,7 @@ classdef Vehicle < System
             dyn.set_f([f1; f2; f3; f4]);
             dyn.set_g(x);
             self.set_dynamics(dyn);
+            self.sensor = [];
         end
     end
     

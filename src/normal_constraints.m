@@ -12,7 +12,7 @@ function C = normal_constraints(p)
         vars = depends(p);
         vars = vars(NORMALS_MAP.isKey(num2cell(vars)));
         % decleration that C is a normal constraint for yalmip
-        if length(vars)==0
+        if isempty(vars)
             C = [];
         else
             C = uncertain(recover(vars), 'normal', zeros(length(vars), 1), eye(length(vars)));
